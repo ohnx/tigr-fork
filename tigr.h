@@ -22,13 +22,6 @@ any implied warranty. If it breaks, you get to keep both pieces.
 extern "C" {
 #endif
 
-// Graphics configuration.
-#ifdef _WIN32
-#define TIGR_GAPI_D3D9
-#else
-#define TIGR_GAPI_GL
-#endif
-
 // Compiler configuration.
 #ifdef _MSC_VER
 #define TIGR_INLINE static __forceinline
