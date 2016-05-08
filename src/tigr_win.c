@@ -287,7 +287,6 @@ LRESULT CALLBACK tigrWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
 					win->scale = tigrEnforceScale(tigrCalcScale(bmp->w, bmp->h, dw, dh), win->flags);
 				}
 				tigrPosition(bmp, win->scale, dw, dh, win->pos);
-				tigrGAPIResize(bmp, dw, dh);
 			}
 
 			// If someone tried to maximize us (e.g. via shortcut launch options),
@@ -373,7 +372,7 @@ Tigr *tigrWindow(int w, int h, const char *title, int flags)
 	WINDOWPLACEMENT wp;
 	DWORD wpsize = sizeof(wp);
 	#endif
-	
+
 	wchar_t *wtitle = unicode(title);
 
 	// Find our registry key.
@@ -443,7 +442,6 @@ Tigr *tigrWindow(int w, int h, const char *title, int flags)
 	SetPropW(hWnd, L"Tigr", bmp);
 
 	tigrGAPICreate(bmp);
-	tigrGAPIBegin(bmp);
 
 	// Try and restore our window position.
 	#ifndef TIGR_DO_NOT_PRESERVE_WINDOW_POSITION
@@ -465,7 +463,6 @@ void tigrFree(Tigr *bmp)
 	{
 		TigrInternal *win = tigrInternal(bmp);
 		DestroyWindow((HWND)bmp->handle);
-		tigrGAPIEnd(bmp);
 		tigrGAPIDestroy(bmp);
 		free(win->wtitle);
 		tigrFree(win->widgets);

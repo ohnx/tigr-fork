@@ -87,9 +87,6 @@ TigrInternal *tigrInternal(Tigr *bmp);
 
 void tigrGAPICreate(Tigr *bmp);
 void tigrGAPIDestroy(Tigr *bmp);
-void tigrGAPIBegin(Tigr *bmp);
-void tigrGAPIEnd(Tigr *bmp);
-void tigrGAPIResize(Tigr *bmp, int width, int height);
 void tigrGAPIPresent(Tigr *bmp, int w, int h);
 
 #endif
