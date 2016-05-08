@@ -3,6 +3,66 @@
 
 #include "tigr.h"
 
+//////// Start of inlined file: tigr_upscale_gl_vs.h ////////
+
+#ifndef __TIGR_UPSCALE_GL_VS_H__
+#define __TIGR_UPSCALE_GL_VS_H__
+
+const unsigned char tigr_upscale_gl_vs[] = {
+	"#version 330 core\n"
+	"\n"
+	"layout (location = 0) in vec2 pos_in;\n"
+	"layout (location = 1) in vec2 uv_in;\n"
+	"\n"
+	"out vec2 uv;\n"
+	"\n"
+	"uniform mat4 model;\n"
+	"uniform mat4 projection;\n"
+	"\n"
+	"void main()\n"
+	"{\n"
+	"	uv = uv_in;\n"
+	"	gl_Position = projection * model * vec4(pos_in, 0.0, 1.0);\n"
+	"}\n"
+};
+
+int tigr_upscale_gl_vs_size = (int)sizeof(tigr_upscale_gl_vs);
+
+#endif
+//////// End of inlined file: tigr_upscale_gl_vs.h ////////
+
+//////// Start of inlined file: tigr_upscale_gl_fs.h ////////
+
+#ifndef __TIGR_UPSCALE_GL_FS_H__
+#define __TIGR_UPSCALE_GL_FS_H__
+
+const unsigned char tigr_upscale_gl_fs[] = {
+	"#version 330 core\n"
+	"\n"
+	"in vec2 uv;\n"
+	"\n"
+	"out vec4 color;\n"
+	"\n"
+	"uniform sampler2D image;\n"
+	"uniform vec4 parameters;\n"
+	"\n"
+	"void main()\n"
+	"{\n"
+	"	vec2 tex_size = textureSize(image, 0);\n"
+	"	vec2 uv_blur = mix(floor(uv * tex_size) + 0.5, uv * tex_size, parameters.xy) / tex_size;\n"
+	"	vec4 c = texture(image, uv_blur);\n"
+	"	c.rgb *= mix(0.5, 1.0 - fract(uv.y * tex_size.y), parameters.z) * 2.0; //scanline\n"
+	"	c = mix(vec4(0.5), c, parameters.w); //contrast \n"
+	"	color = c;\n"
+	"}\n"
+};
+
+int tigr_upscale_gl_fs_size = (int)sizeof(tigr_upscale_gl_fs);
+
+#endif
+//////// End of inlined file: tigr_upscale_gl_fs.h ////////
+
+
 //////// Start of inlined file: tigr_bitmaps.c ////////
 
 //////// Start of inlined file: tigr_internal.h ////////
@@ -48,6 +108,9 @@ typedef struct {
 	HGLRC hglrc;
 	HDC dc;
 	#endif
+	#ifdef __APPLE__
+	void *glContext;
+	#endif
 	GLuint tex[2];
 	GLuint vao;
 	GLuint program;
@@ -55,6 +118,7 @@ typedef struct {
 	GLuint uniform_model;
 	GLuint uniform_parameters;
 	int gl_legacy;
+	int gl_user_opengl_rendering;
 } GLStuff;
 #endif
 
@@ -68,9 +132,6 @@ typedef struct {
 	wchar_t *wtitle;
 	DWORD dwStyle;
 	RECT oldPos;
-	#endif
-	#ifdef __APPLE__
-	void *glContext;
 	#endif
 
 	Tigr *widgets;
@@ -97,6 +158,8 @@ TigrInternal *tigrInternal(Tigr *bmp);
 void tigrGAPICreate(Tigr *bmp);
 void tigrGAPIDestroy(Tigr *bmp);
 void tigrGAPIPresent(Tigr *bmp, int w, int h);
+int tigrGAPIBegin(Tigr *bmp);
+int tigrGAPIEnd(Tigr *bmp);
 
 #endif
 
@@ -812,6 +875,17 @@ char *tigrEncodeUTF8(char *text, int cp)
 #undef EMIT
 }
 
+int tigrBeginOpenGL(Tigr *bmp)
+{
+	#ifdef TIGR_GAPI_GL
+	TigrInternal *win = tigrInternal(bmp);
+	win->gl.gl_user_opengl_rendering = 1;
+	return tigrGAPIBegin(bmp);
+	#else
+	return -1;
+	#endif
+}
+
 void tigrSetPostFX(Tigr *bmp, int hblur, int vblur, float scanlines, float contrast)
 {
 	TigrInternal *win = tigrInternal(bmp);
@@ -1511,65 +1585,6 @@ int tigrTextHeight(TigrFont *font, const char *text)
 
 //////// End of inlined file: tigr_print.c ////////
 
-//////// Start of inlined file: tigr_upscale_gl_vs.h ////////
-
-#ifndef __TIGR_UPSCALE_GL_VS_H__
-#define __TIGR_UPSCALE_GL_VS_H__
-
-const unsigned char tigr_upscale_gl_vs[] = {
-	"#version 330 core\n"
-	"\n"
-	"layout (location = 0) in vec2 pos_in;\n"
-	"layout (location = 1) in vec2 uv_in;\n"
-	"\n"
-	"out vec2 uv;\n"
-	"\n"
-	"uniform mat4 model;\n"
-	"uniform mat4 projection;\n"
-	"\n"
-	"void main()\n"
-	"{\n"
-	"	uv = uv_in;\n"
-	"	gl_Position = projection * model * vec4(pos_in, 0.0, 1.0);\n"
-	"}\n"
-};
-
-int tigr_upscale_gl_vs_size = (int)sizeof(tigr_upscale_gl_vs);
-
-#endif
-//////// End of inlined file: tigr_upscale_gl_vs.h ////////
-
-//////// Start of inlined file: tigr_upscale_gl_fs.h ////////
-
-#ifndef __TIGR_UPSCALE_GL_FS_H__
-#define __TIGR_UPSCALE_GL_FS_H__
-
-const unsigned char tigr_upscale_gl_fs[] = {
-	"#version 330 core\n"
-	"\n"
-	"in vec2 uv;\n"
-	"\n"
-	"out vec4 color;\n"
-	"\n"
-	"uniform sampler2D image;\n"
-	"uniform vec4 parameters;\n"
-	"\n"
-	"void main()\n"
-	"{\n"
-	"	vec2 tex_size = textureSize(image, 0);\n"
-	"	vec2 uv_blur = mix(floor(uv * tex_size) + 0.5, uv * tex_size, parameters.xy) / tex_size;\n"
-	"	vec4 c = texture(image, uv_blur);\n"
-	"	c.rgb *= mix(0.5, 1.0 - fract(uv.y * tex_size.y), parameters.z) * 2.0; //scanline\n"
-	"	c = mix(vec4(0.5), c, parameters.w); //contrast \n"
-	"	color = c;\n"
-	"}\n"
-};
-
-int tigr_upscale_gl_fs_size = (int)sizeof(tigr_upscale_gl_fs);
-
-#endif
-//////// End of inlined file: tigr_upscale_gl_fs.h ////////
-
 //////// Start of inlined file: tigr_win.c ////////
 
 //#include "tigr_internal.h"
@@ -1654,7 +1669,7 @@ void tigrLeaveBorderlessWindowed(Tigr *bmp)
 		0);
 }
 
-void tigrDxUpdateWidgets(Tigr *bmp, int dw, int dh)
+void tigrWinUpdateWidgets(Tigr *bmp, int dw, int dh)
 {
 	POINT pt;
 	int i, x, clicked=0;
@@ -1746,9 +1761,13 @@ void tigrUpdate(Tigr *bmp)
 	dh = rc.bottom - rc.top;
 
 	// Update the widget overlay.
-	tigrDxUpdateWidgets(bmp, dw, dh);
+	tigrWinUpdateWidgets(bmp, dw, dh);
 
-	tigrGAPIPresent(bmp, dw, dh);
+	if(!tigrGAPIBegin(bmp))
+	{
+		tigrGAPIPresent(bmp, dw, dh);
+		tigrGAPIEnd(bmp);
+	}
 
 	memcpy(win->prev, win->keys, 256);
 
@@ -1761,6 +1780,19 @@ void tigrUpdate(Tigr *bmp)
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}
+}
+
+int tigrGAPIBegin(Tigr *bmp)
+{
+	TigrInternal *win = tigrInternal(bmp);
+	return wglMakeCurrent(win->gl.dc, win->gl.hglrc) ? 0 : -1;
+	return 0;
+}
+
+int tigrGAPIEnd(Tigr *bmp)
+{
+	(void)bmp;
+	return wglMakeCurrent(NULL, NULL) ? 0 : -1;
 }
 
 static BOOL UnadjustWindowRectEx(LPRECT prc, DWORD dwStyle, BOOL fMenu, DWORD dwExStyle)
@@ -1796,7 +1828,11 @@ LRESULT CALLBACK tigrWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
 	switch (message)
 	{
 	case WM_PAINT:
-		tigrGAPIPresent(bmp, dw, dh);
+		if(!tigrGAPIBegin(bmp))
+		{
+			tigrGAPIPresent(bmp, dw, dh);
+			tigrGAPIEnd(bmp);
+		}
 		ValidateRect(hWnd, NULL);
 		break;
 	case WM_CLOSE:
@@ -2036,8 +2072,8 @@ void tigrFree(Tigr *bmp)
 	if (bmp->handle)
 	{
 		TigrInternal *win = tigrInternal(bmp);
-		DestroyWindow((HWND)bmp->handle);
 		tigrGAPIDestroy(bmp);
+		DestroyWindow((HWND)bmp->handle);
 		free(win->wtitle);
 		tigrFree(win->widgets);
 	}
@@ -2573,7 +2609,6 @@ Tigr *tigrWindow(int w, int h, const char *title, int flags)
 
 	// Set up the Windows parts.
 	win = tigrInternal(bmp);
-	win->glContext = openGLContext;
 	win->shown = 0;
 	win->closed = 0;
 	win->scale = scale;
@@ -2587,6 +2622,7 @@ Tigr *tigrWindow(int w, int h, const char *title, int flags)
 	win->widgetsScale = 0;
 	win->widgets = tigrBitmap(40, 14);
 	win->gl.gl_legacy = 0;
+	win->gl.glContext = openGLContext;
 	win->mouseButtons = 0;
 
 	tigrPosition(bmp, win->scale, bmp->w, bmp->h, win->pos);
@@ -2602,7 +2638,6 @@ void tigrFree(Tigr *bmp)
 	if(bmp->handle)
 	{
 		TigrInternal * win = tigrInternal(bmp);
-		objc_msgSend_void((id)win->glContext, sel_registerName("makeCurrentContext"));
 		tigrGAPIDestroy(bmp);
 		tigrFree(win->widgets);
 
@@ -2965,7 +3000,7 @@ void tigrUpdate(Tigr *bmp)
 	id window;
 	win = tigrInternal(bmp);
 	window = (id)bmp->handle;
-	openGLContext = (id)win->glContext;
+	openGLContext = (id)win->gl.glContext;
 
 	id keyWindow = objc_msgSend_id(NSApp, sel_registerName("keyWindow"));
 
@@ -2981,7 +3016,7 @@ void tigrUpdate(Tigr *bmp)
 	// do runloop stuff
 	objc_msgSend_void(NSApp, sel_registerName("updateWindows"));
 	objc_msgSend_void(openGLContext, sel_registerName("update"));
-	objc_msgSend_void(openGLContext, sel_registerName("makeCurrentContext"));
+	tigrGAPIBegin(bmp);
 
 	NSSize windowSize = _tigrCocoaWindowSize(window);
 
@@ -2993,6 +3028,21 @@ void tigrUpdate(Tigr *bmp)
 	tigrPosition(bmp, win->scale, windowSize.width, windowSize.height, win->pos);
 	tigrGAPIPresent(bmp, windowSize.width, windowSize.height);
 	objc_msgSend_void(openGLContext, sel_registerName("flushBuffer"));
+	tigrGAPIEnd(bmp);
+}
+
+int tigrGAPIBegin(Tigr *bmp)
+{
+	TigrInternal *win = tigrInternal(bmp);
+	objc_msgSend_void((id)win->gl.glContext, sel_registerName("makeCurrentContext"));
+	return 0;
+}
+
+int tigrGAPIEnd(Tigr *bmp)
+{
+	(void)bmp;
+	objc_msgSend_void((id)objc_getClass("NSOpenGLContext"), sel_registerName("clearCurrentContext"));
+	return 0;
 }
 
 int tigrClosed(Tigr *bmp)
@@ -3096,21 +3146,73 @@ float tigrTime()
 
 //#include "tigr_internal.h"
 #include <stdio.h> // TODO can we remove this and printf's later?
+#include <assert.h>
 
 #ifdef TIGR_GAPI_GL
-#ifndef __APPLE__
-// please provide you own glext.h, you can download latest at https://www.opengl.org/registry/api/GL/glext.h
-#include <glext.h>
-#endif
-#ifdef _WIN32
-// please provide you own wglext.h, you can download latest at https://www.opengl.org/registry/api/GL/wglext.h
-#include <wglext.h>
-#endif
 
 extern const unsigned char tigr_upscale_gl_vs[], tigr_upscale_gl_fs[];
 extern int tigr_upscale_gl_vs_size, tigr_upscale_gl_fs_size;
 
 #ifdef _WIN32
+
+#ifdef TIGR_GAPI_GL_WIN_USE_GLEXT
+#include <glext.h>
+#include <wglext.h>
+#else // short version of glext.h and wglext.h so we don't need to depend on them
+#ifndef APIENTRY
+#define APIENTRY
+#endif
+#ifndef APIENTRYP
+#define APIENTRYP APIENTRY *
+#endif
+typedef ptrdiff_t GLsizeiptr;
+#define GL_COMPILE_STATUS                 0x8B81
+#define GL_LINK_STATUS                    0x8B82
+#define GL_ARRAY_BUFFER                   0x8892
+#define GL_STATIC_DRAW                    0x88E4
+#define GL_VERTEX_SHADER                  0x8B31
+#define GL_FRAGMENT_SHADER                0x8B30
+#define GL_BGRA                           0x80E1
+#define GL_TEXTURE0                       0x84C0
+typedef void (APIENTRYP PFNGLGENVERTEXARRAYSPROC) (GLsizei n, GLuint *arrays);
+typedef void (APIENTRYP PFNGLGENBUFFERSARBPROC) (GLsizei n, GLuint *buffers);
+typedef void (APIENTRYP PFNGLBINDBUFFERPROC) (GLenum target, GLuint buffer);
+typedef void (APIENTRYP PFNGLBUFFERDATAPROC) (GLenum target, GLsizeiptr size, const void *data, GLenum usage);
+typedef void (APIENTRYP PFNGLBINDVERTEXARRAYPROC) (GLuint array);
+typedef void (APIENTRYP PFNGLENABLEVERTEXATTRIBARRAYPROC) (GLuint index);
+typedef void (APIENTRYP PFNGLVERTEXATTRIBPOINTERPROC) (GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const void *pointer);
+typedef GLuint (APIENTRYP PFNGLCREATESHADERPROC) (GLenum type);
+typedef char GLchar;
+typedef void (APIENTRYP PFNGLSHADERSOURCEPROC) (GLuint shader, GLsizei count, const GLchar *const*string, const GLint *length);
+typedef void (APIENTRYP PFNGLCOMPILESHADERPROC) (GLuint shader);
+typedef GLuint (APIENTRYP PFNGLCREATEPROGRAMPROC) (void);
+typedef void (APIENTRYP PFNGLATTACHSHADERPROC) (GLuint program, GLuint shader);
+typedef void (APIENTRYP PFNGLLINKPROGRAMPROC) (GLuint program);
+typedef void (APIENTRYP PFNGLDELETESHADERPROC) (GLuint shader);
+typedef void (APIENTRYP PFNGLDELETEPROGRAMPROC) (GLuint program);
+typedef void (APIENTRYP PFNGLGETSHADERIVPROC) (GLuint shader, GLenum pname, GLint *params);
+typedef void (APIENTRYP PFNGLGETSHADERINFOLOGPROC) (GLuint shader, GLsizei bufSize, GLsizei *length, GLchar *infoLog);
+typedef void (APIENTRYP PFNGLGETPROGRAMIVPROC) (GLuint program, GLenum pname, GLint *params);
+typedef void (APIENTRYP PFNGLGETPROGRAMINFOLOGPROC) (GLuint program, GLsizei bufSize, GLsizei *length, GLchar *infoLog);
+typedef void (APIENTRYP PFNGLUSEPROGRAMPROC) (GLuint program);
+typedef GLint (APIENTRYP PFNGLGETUNIFORMLOCATIONPROC) (GLuint program, const GLchar *name);
+typedef void (APIENTRYP PFNGLUNIFORM4FPROC) (GLint location, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3);
+typedef void (APIENTRYP PFNGLUNIFORMMATRIX4FVPROC) (GLint location, GLsizei count, GLboolean transpose, const GLfloat *value);
+typedef void (APIENTRYP PFNGLACTIVETEXTUREPROC) (GLenum texture);
+#define WGL_DRAW_TO_WINDOW_ARB            0x2001
+#define WGL_SUPPORT_OPENGL_ARB            0x2010
+#define WGL_DOUBLE_BUFFER_ARB             0x2011
+#define WGL_PIXEL_TYPE_ARB                0x2013
+#define WGL_COLOR_BITS_ARB                0x2014
+#define WGL_DEPTH_BITS_ARB                0x2022
+#define WGL_STENCIL_BITS_ARB              0x2023
+#define WGL_TYPE_RGBA_ARB                 0x202B
+#define WGL_CONTEXT_MAJOR_VERSION_ARB     0x2091
+#define WGL_CONTEXT_MINOR_VERSION_ARB     0x2092
+typedef BOOL (WINAPI * PFNWGLCHOOSEPIXELFORMATARBPROC) (HDC hdc, const int *piAttribIList, const FLOAT *pfAttribFList, UINT nMaxFormats, int *piFormats, UINT *nNumFormats);
+typedef HGLRC (WINAPI * PFNWGLCREATECONTEXTATTRIBSARBPROC) (HDC hDC, HGLRC hShareContext, const int *attribList);
+#endif
+
 PFNWGLCHOOSEPIXELFORMATARBPROC wglChoosePixelFormat;
 PFNWGLCREATECONTEXTATTRIBSARBPROC wglCreateContextAttribs;
 PFNGLGENVERTEXARRAYSPROC glGenVertexArrays;
@@ -3278,8 +3380,6 @@ void tigrGAPICreate(Tigr *bmp)
 	tigrGL33Init(bmp);
 	#endif
 
-	//printf("ogl version %s\n", glGetString(GL_VERSION));
-
 	if(!gl->gl_legacy)
 	{
 		// create vao
@@ -3336,6 +3436,8 @@ void tigrGAPIDestroy(Tigr *bmp)
 	TigrInternal *win = tigrInternal(bmp);
 	GLStuff *gl= &win->gl;
 
+	if(tigrGAPIBegin(bmp) < 0) {tigrError(bmp, "Cannot activate OpenGL context.\n"); return;}
+
 	if(!gl->gl_legacy)
 	{
 		glDeleteTextures(2, gl->tex);
@@ -3344,8 +3446,9 @@ void tigrGAPIDestroy(Tigr *bmp)
 
 	tigrCheckGLError("destroy");
 
+	if(tigrGAPIEnd(bmp) < 0) {tigrError(bmp, "Cannot deactivate OpenGL context.\n"); return;}
+
 	#ifdef _WIN32
-	if(!wglMakeCurrent(NULL, NULL)) {tigrError(bmp, "Cannot deactivate OpenGL context.\n"); return;}
 	if(gl->hglrc && !wglDeleteContext(gl->hglrc)) {tigrError(bmp, "Cannot delete OpenGL context.\n"); return;}
 	gl->hglrc = NULL;
 
@@ -3397,12 +3500,12 @@ void tigrGAPIPresent(Tigr *bmp, int w, int h)
 	TigrInternal *win = tigrInternal(bmp);
 	GLStuff *gl= &win->gl;
 
-#ifdef _WIN32
-	wglMakeCurrent(gl->dc, gl->hglrc);
-#endif
 	glViewport(0, 0, w, h);
-	glClearColor(0, 0, 0, 1);
-	glClear(GL_COLOR_BUFFER_BIT);
+	if (!gl->gl_user_opengl_rendering)
+	{
+		glClearColor(0, 0, 0, 1);
+		glClear(GL_COLOR_BUFFER_BIT);
+	}
 
 	if(!gl->gl_legacy)
 	{
@@ -3432,7 +3535,13 @@ void tigrGAPIPresent(Tigr *bmp, int w, int h)
 		#endif
 	}
 
-	glDisable(GL_BLEND);
+	if (gl->gl_user_opengl_rendering)
+	{
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	}
+	else
+		glDisable(GL_BLEND);
 	tigrGAPIDraw(gl->gl_legacy, gl->uniform_model, gl->tex[0], bmp, win->pos[0], win->pos[1], win->pos[2], win->pos[3]);
 
 	if(win->widgetsScale > 0)
@@ -3449,6 +3558,8 @@ void tigrGAPIPresent(Tigr *bmp, int w, int h)
 	#ifdef _WIN32
 	if(!SwapBuffers(gl->dc)) {tigrError(bmp, "Cannot swap OpenGL buffers.\n"); return;}
 	#endif
+
+	gl->gl_user_opengl_rendering = 0;
 }
 
 #endif
