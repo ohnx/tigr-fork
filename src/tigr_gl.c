@@ -235,14 +235,6 @@ void tigrGAPICreate(Tigr *bmp)
 	tigrCheckGLError("initialization");
 }
 
-void tigrGAPIBegin(Tigr *bmp)
-{
-}
-
-void tigrGAPIEnd(Tigr *bmp)
-{
-}
-
 void tigrGAPIDestroy(Tigr *bmp)
 {
 	TigrInternal *win = tigrInternal(bmp);
@@ -264,14 +256,6 @@ void tigrGAPIDestroy(Tigr *bmp)
 	if(gl->dc && !ReleaseDC((HWND)bmp->handle, gl->dc)) {tigrError(bmp, "Cannot release OpenGL device context.\n"); return;}
 	gl->dc = NULL;
 	#endif
-}
-
-void tigrGAPIResize(Tigr *bmp, int width, int height)
-{
-	// no-op
-	(void)bmp;
-	(void)width;
-	(void)height;
 }
 
 void tigrGAPIDraw(int legacy, GLuint uniform_model, GLuint tex, Tigr *bmp, int x1, int y1, int x2, int y2)
@@ -359,8 +343,8 @@ void tigrGAPIPresent(Tigr *bmp, int w, int h)
 	{
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		tigrGAPIDraw(gl->gl_legacy, gl->uniform_model, gl->tex[1], win->widgets, 
-			(int)(w - win->widgets->w * win->widgetsScale), 0, 
+		tigrGAPIDraw(gl->gl_legacy, gl->uniform_model, gl->tex[1], win->widgets,
+			(int)(w - win->widgets->w * win->widgetsScale), 0,
 			w, (int)(win->widgets->h * win->widgetsScale));
 	}
 

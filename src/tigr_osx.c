@@ -364,8 +364,6 @@ Tigr *tigrWindow(int w, int h, const char *title, int flags)
 
 	objc_msgSend_void(openGLContext, sel_registerName("makeCurrentContext"));
 	tigrGAPICreate(bmp);
-	tigrGAPIBegin(bmp);
-	tigrGAPIResize(bmp, bmp->w, bmp->h);
 
 	return bmp;
 }
@@ -376,7 +374,6 @@ void tigrFree(Tigr *bmp)
 	{
 		TigrInternal * win = tigrInternal(bmp);
 		objc_msgSend_void((id)win->glContext, sel_registerName("makeCurrentContext"));
-		tigrGAPIEnd(bmp);
 		tigrGAPIDestroy(bmp);
 		tigrFree(win->widgets);
 
@@ -765,7 +762,6 @@ void tigrUpdate(Tigr *bmp)
 		win->scale = tigrEnforceScale(tigrCalcScale(bmp->w, bmp->h, windowSize.width, windowSize.height), win->flags);
 
 	tigrPosition(bmp, win->scale, windowSize.width, windowSize.height, win->pos);
-	tigrGAPIResize(bmp, windowSize.width, windowSize.height);
 	tigrGAPIPresent(bmp, windowSize.width, windowSize.height);
 	objc_msgSend_void(openGLContext, sel_registerName("flushBuffer"));
 }

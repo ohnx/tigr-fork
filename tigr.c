@@ -96,9 +96,6 @@ TigrInternal *tigrInternal(Tigr *bmp);
 
 void tigrGAPICreate(Tigr *bmp);
 void tigrGAPIDestroy(Tigr *bmp);
-void tigrGAPIBegin(Tigr *bmp);
-void tigrGAPIEnd(Tigr *bmp);
-void tigrGAPIResize(Tigr *bmp, int width, int height);
 void tigrGAPIPresent(Tigr *bmp, int w, int h);
 
 #endif
@@ -1864,7 +1861,6 @@ LRESULT CALLBACK tigrWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
 					win->scale = tigrEnforceScale(tigrCalcScale(bmp->w, bmp->h, dw, dh), win->flags);
 				}
 				tigrPosition(bmp, win->scale, dw, dh, win->pos);
-				tigrGAPIResize(bmp, dw, dh);
 			}
 
 			// If someone tried to maximize us (e.g. via shortcut launch options),
@@ -1950,7 +1946,7 @@ Tigr *tigrWindow(int w, int h, const char *title, int flags)
 	WINDOWPLACEMENT wp;
 	DWORD wpsize = sizeof(wp);
 	#endif
-	
+
 	wchar_t *wtitle = unicode(title);
 
 	// Find our registry key.
@@ -2020,7 +2016,6 @@ Tigr *tigrWindow(int w, int h, const char *title, int flags)
 	SetPropW(hWnd, L"Tigr", bmp);
 
 	tigrGAPICreate(bmp);
-	tigrGAPIBegin(bmp);
 
 	// Try and restore our window position.
 	#ifndef TIGR_DO_NOT_PRESERVE_WINDOW_POSITION
@@ -2042,7 +2037,6 @@ void tigrFree(Tigr *bmp)
 	{
 		TigrInternal *win = tigrInternal(bmp);
 		DestroyWindow((HWND)bmp->handle);
-		tigrGAPIEnd(bmp);
 		tigrGAPIDestroy(bmp);
 		free(win->wtitle);
 		tigrFree(win->widgets);
@@ -2599,8 +2593,6 @@ Tigr *tigrWindow(int w, int h, const char *title, int flags)
 
 	objc_msgSend_void(openGLContext, sel_registerName("makeCurrentContext"));
 	tigrGAPICreate(bmp);
-	tigrGAPIBegin(bmp);
-	tigrGAPIResize(bmp, bmp->w, bmp->h);
 
 	return bmp;
 }
@@ -2611,7 +2603,6 @@ void tigrFree(Tigr *bmp)
 	{
 		TigrInternal * win = tigrInternal(bmp);
 		objc_msgSend_void((id)win->glContext, sel_registerName("makeCurrentContext"));
-		tigrGAPIEnd(bmp);
 		tigrGAPIDestroy(bmp);
 		tigrFree(win->widgets);
 
@@ -3000,7 +2991,6 @@ void tigrUpdate(Tigr *bmp)
 		win->scale = tigrEnforceScale(tigrCalcScale(bmp->w, bmp->h, windowSize.width, windowSize.height), win->flags);
 
 	tigrPosition(bmp, win->scale, windowSize.width, windowSize.height, win->pos);
-	tigrGAPIResize(bmp, windowSize.width, windowSize.height);
 	tigrGAPIPresent(bmp, windowSize.width, windowSize.height);
 	objc_msgSend_void(openGLContext, sel_registerName("flushBuffer"));
 }
@@ -3341,14 +3331,6 @@ void tigrGAPICreate(Tigr *bmp)
 	tigrCheckGLError("initialization");
 }
 
-void tigrGAPIBegin(Tigr *bmp)
-{
-}
-
-void tigrGAPIEnd(Tigr *bmp)
-{
-}
-
 void tigrGAPIDestroy(Tigr *bmp)
 {
 	TigrInternal *win = tigrInternal(bmp);
@@ -3370,14 +3352,6 @@ void tigrGAPIDestroy(Tigr *bmp)
 	if(gl->dc && !ReleaseDC((HWND)bmp->handle, gl->dc)) {tigrError(bmp, "Cannot release OpenGL device context.\n"); return;}
 	gl->dc = NULL;
 	#endif
-}
-
-void tigrGAPIResize(Tigr *bmp, int width, int height)
-{
-	// no-op
-	(void)bmp;
-	(void)width;
-	(void)height;
 }
 
 void tigrGAPIDraw(int legacy, GLuint uniform_model, GLuint tex, Tigr *bmp, int x1, int y1, int x2, int y2)
@@ -3465,8 +3439,8 @@ void tigrGAPIPresent(Tigr *bmp, int w, int h)
 	{
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		tigrGAPIDraw(gl->gl_legacy, gl->uniform_model, gl->tex[1], win->widgets, 
-			(int)(w - win->widgets->w * win->widgetsScale), 0, 
+		tigrGAPIDraw(gl->gl_legacy, gl->uniform_model, gl->tex[1], win->widgets,
+			(int)(w - win->widgets->w * win->widgetsScale), 0,
 			w, (int)(win->widgets->h * win->widgetsScale));
 	}
 
