@@ -5,13 +5,7 @@
 #define _CRT_SECURE_NO_WARNINGS NOPE
 
 // Graphics configuration.
-#if !defined(TIGR_GAPI_D3D9) && !defined(TIGR_GAPI_GL)
-#ifdef _WIN32
-#define TIGR_GAPI_D3D9
-#else
 #define TIGR_GAPI_GL
-#endif
-#endif
 
 // Creates a new bitmap, with extra payload bytes.
 Tigr *tigrBitmap2(int w, int h, int extra);
@@ -32,18 +26,6 @@ void tigrPosition(Tigr *bmp, int scale, int windowW, int windowH, int out[4]);
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-#endif
-
-#ifdef TIGR_GAPI_D3D9
-#include <d3d9.h>
-typedef struct {
-	int lost;
-	IDirect3DDevice9 *dev;
-	D3DPRESENT_PARAMETERS params;
-	IDirect3DTexture9 *sysTex[2], *vidTex[2];
-	IDirect3DVertexShader9 *vs;
-	IDirect3DPixelShader9 *ps;
-} D3D9Stuff;
 #endif
 
 #ifdef TIGR_GAPI_GL
@@ -69,9 +51,6 @@ typedef struct {
 
 typedef struct {
 	int shown, closed;
-	#ifdef TIGR_GAPI_D3D9
-	D3D9Stuff d3d9;
-	#endif
 	#ifdef TIGR_GAPI_GL
 	GLStuff gl;
 	#endif

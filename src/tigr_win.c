@@ -427,9 +427,6 @@ Tigr *tigrWindow(int w, int h, const char *title, int flags)
 	win->wtitle = wtitle;
 	win->shown = 0;
 	win->closed = 0;
-	#ifdef TIGR_GAPI_D3D9
-	win->d3d9.lost = 1;
-	#endif
 	win->scale = scale;
 	win->lastChar = 0;
 	win->flags = flags;
