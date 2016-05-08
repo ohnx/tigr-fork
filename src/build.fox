@@ -1,0 +1,34 @@
+rule incbin
+	command = perl incbin.pl $out $in $symbol
+rule fxc_vs
+	command = fxc /nologo /Tvs_2_0 /Evs_main /VntigrUpscaleVSCode /O3 /Zpr /Gfa /Fh$out $in
+rule fxc_ps
+	command = fxc /nologo /Tps_2_0 /Eps_main /VntigrUpscalePSCode /O3 /Zpr /Gfa /Fh$out $in
+rule bundle
+	command = perl bundle.pl $out $in
+
+# build tigr.c
+build tigr_font.h: incbin font.png | incbin.pl
+	symbol = tigr_font
+build tigr_upscale_gl_vs.h: incbin tigr_upscale_gl_vs.hlsl | incbin.pl
+	symbol = tigr_upscale_gl_vs
+build tigr_upscale_gl_fs.h: incbin tigr_upscale_gl_fs.hlsl | incbin.pl
+	symbol = tigr_upscale_gl_fs
+filter system: Windows
+	build tigr_upscale_d3d9_vs.h: fxc_vs tigr_upscale_d3d9.hlsl
+	build tigr_upscale_d3d9_ps.h: fxc_ps tigr_upscale_d3d9.hlsl
+# do not build tigr.c atm
+build ../tigr.c: bundle tigr_amalgamated.c | *.c *.h bundle.pl
+
+# build test app
+includedirs += ..
+filter system: Windows
+	ldflags += /SUBSYSTEM:WINDOWS
+	libs += Opengl32 Gdi32 d3d9 User32 Shell32
+build objects(../examples/hello/build/example/*): auto ../examples/hello/*.c | ../tigr.h
+build objects(../examples/hello/build/tigr/*): auto *.c | *.h
+build application(../examples/hello/build/hello): auto objects(../examples/hello/build/**/*)
+
+build objects(../examples/demo/build/example/*): auto ../examples/demo/*.c | ../tigr.h
+build objects(../examples/demo/build/tigr/*): auto *.c | *.h
+build application(../examples/demo/build/demo): auto objects(../examples/demo/build/**/*)
