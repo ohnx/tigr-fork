@@ -10,9 +10,9 @@ rule bundle
 # build tigr.c
 build tigr_font.h: incbin font.png | incbin.pl
 	symbol = tigr_font
-build tigr_upscale_gl_vs.h: incbin tigr_upscale_gl_vs.hlsl | incbin.pl
+build tigr_upscale_gl_vs.h: incbin tigr_upscale_gl_vs.glsl | incbin.pl
 	symbol = tigr_upscale_gl_vs
-build tigr_upscale_gl_fs.h: incbin tigr_upscale_gl_fs.hlsl | incbin.pl
+build tigr_upscale_gl_fs.h: incbin tigr_upscale_gl_fs.glsl | incbin.pl
 	symbol = tigr_upscale_gl_fs
 filter system: Windows
 	build tigr_upscale_d3d9_vs.h: fxc_vs tigr_upscale_d3d9.hlsl
@@ -26,9 +26,9 @@ filter system: Windows
 	ldflags += /SUBSYSTEM:WINDOWS
 	libs += Opengl32 Gdi32 d3d9 User32 Shell32
 build objects(../examples/hello/build/example/*): auto ../examples/hello/*.c | ../tigr.h
-build objects(../examples/hello/build/tigr/*): auto *.c | *.h
+build objects(../examples/hello/build/tigr/*): auto ../*.c | ../*.h
 build application(../examples/hello/build/hello): auto objects(../examples/hello/build/**/*)
 
-build objects(../examples/demo/build/example/*): auto ../examples/demo/*.c | ../tigr.h
-build objects(../examples/demo/build/tigr/*): auto *.c | *.h
+build objects(../examples/demo/build/example/*): auto ../examples/demo/*.cpp | ../tigr.h
+build objects(../examples/demo/build/tigr/*): auto ../*.c | ../*.h
 build application(../examples/demo/build/demo): auto objects(../examples/demo/build/**/*)
