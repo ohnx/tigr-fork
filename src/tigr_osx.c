@@ -765,7 +765,6 @@ void tigrUpdate(Tigr *bmp)
 	objc_msgSend_void(openGLContext, sel_registerName("flushBuffer"));
 }
 
-
 int tigrBeginOpenGL(Tigr *bmp)
 {
 	TigrInternal *win = tigrInternal(bmp);
@@ -776,7 +775,6 @@ int tigrBeginOpenGL(Tigr *bmp)
 
 int tigrEndOpenGL(Tigr *bmp)
 {
-	TigrInternal *win = tigrInternal(bmp);
 	(void)bmp;
 	objc_msgSend_void((id)objc_getClass("NSOpenGLContext"), sel_registerName("clearCurrentContext"));
 	return 0;
