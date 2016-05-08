@@ -114,11 +114,11 @@ int tigrGL11Init(Tigr *bmp)
 		0,
 		0, 0, 0
 	};
-	if(!(gl->dc = GetDC((HWND)bmp->handle))) {tigrError(bmp, "Cannot create OpenGL device context.\n"); return -1;}
-	if(!(pixel_format = ChoosePixelFormat(gl->dc, &pfd))) {tigrError(bmp, "Cannot choose OpenGL pixel format.\n"); return -1;}
-	if(!SetPixelFormat(gl->dc, pixel_format, &pfd)) {tigrError(bmp, "Cannot set OpenGL pixel format.\n"); return -1;}
-	if(!(gl->hglrc = wglCreateContext(gl->dc))) {tigrError(bmp, "Cannot create OpenGL context.\n"); return -1;}
-	if(!wglMakeCurrent(gl->dc, gl->hglrc)) {tigrError(bmp, "Cannot activate OpenGL context.\n"); return -1;}
+	if (!(gl->dc = GetDC((HWND)bmp->handle))) {tigrError(bmp, "Cannot create OpenGL device context.\n"); return -1;}
+	if (!(pixel_format = ChoosePixelFormat(gl->dc, &pfd))) {tigrError(bmp, "Cannot choose OpenGL pixel format.\n"); return -1;}
+	if (!SetPixelFormat(gl->dc, pixel_format, &pfd)) {tigrError(bmp, "Cannot set OpenGL pixel format.\n"); return -1;}
+	if (!(gl->hglrc = wglCreateContext(gl->dc))) {tigrError(bmp, "Cannot create OpenGL context.\n"); return -1;}
+	if (!wglMakeCurrent(gl->dc, gl->hglrc)) {tigrError(bmp, "Cannot activate OpenGL context.\n"); return -1;}
 	gl->gl_legacy = 1;
 	return 0;
 }
@@ -156,7 +156,7 @@ int tigrGL33Init(Tigr *bmp)
 	glUniformMatrix4fv = (PFNGLUNIFORMMATRIX4FVPROC)wglGetProcAddress("glUniformMatrix4fv");
 	glActiveTexture = (PFNGLACTIVETEXTUREPROC)wglGetProcAddress("glActiveTexture");
 
-	if(!wglChoosePixelFormat || !wglCreateContextAttribs) {tigrError(bmp, "Cannot create OpenGL context.\n"); return -1;}
+	if (!wglChoosePixelFormat || !wglCreateContextAttribs) {tigrError(bmp, "Cannot create OpenGL context.\n"); return -1;}
 	const int attribList[] =
 	{
 		WGL_DRAW_TO_WINDOW_ARB, GL_TRUE,
@@ -173,9 +173,9 @@ int tigrGL33Init(Tigr *bmp)
 		WGL_CONTEXT_MINOR_VERSION_ARB, 3,
 		0
 	};
-	if(!wglChoosePixelFormat(gl->dc, attribList, NULL, 1, &pixel_format, &num_formats)) {tigrError(bmp, "Cannot choose OpenGL pixel format.\n"); return -1;}
-	if(!(gl->hglrc = wglCreateContextAttribs(gl->dc, gl->hglrc, attribs))) {tigrError(bmp, "Cannot create OpenGL context attribs.\n"); return -1;}
-	if(!wglMakeCurrent(gl->dc, gl->hglrc)) {tigrError(bmp, "Cannot activate OpenGL context.\n"); return -1;}
+	if (!wglChoosePixelFormat(gl->dc, attribList, NULL, 1, &pixel_format, &num_formats)) {tigrError(bmp, "Cannot choose OpenGL pixel format.\n"); return -1;}
+	if (!(gl->hglrc = wglCreateContextAttribs(gl->dc, gl->hglrc, attribs))) {tigrError(bmp, "Cannot create OpenGL context attribs.\n"); return -1;}
+	if (!wglMakeCurrent(gl->dc, gl->hglrc)) {tigrError(bmp, "Cannot activate OpenGL context.\n"); return -1;}
 	gl->gl_legacy = 0;
 	return 0;
 }
@@ -184,7 +184,7 @@ int tigrGL33Init(Tigr *bmp)
 void tigrCheckGLError(const char *state)
 {
 	GLenum err = glGetError();
-	if(err != GL_NO_ERROR)
+	if (err != GL_NO_ERROR)
 		printf("got gl error %x when was doing %s\n", err, state);
 }
 
@@ -193,7 +193,7 @@ void tigrCheckShaderErrors(GLuint object)
 	GLint success;
 	GLchar info[2048];
 	glGetShaderiv(object, GL_COMPILE_STATUS, &success);
-	if(!success)
+	if (!success)
 	{
 		glGetShaderInfoLog(object, sizeof(info), NULL, info);
 		printf("shader compile error : %s\n", info);
@@ -205,7 +205,7 @@ void tigrCheckProgramErrors(GLuint object)
 	GLint success;
 	GLchar info[2048];
 	glGetProgramiv(object, GL_LINK_STATUS, &success);
-	if(!success)
+	if (!success)
 	{
 		glGetProgramInfoLog(object, sizeof(info), NULL, info);
 		printf("shader link error : %s\n", info);
@@ -229,12 +229,12 @@ void tigrGAPICreate(Tigr *bmp)
 	};
 
 	#ifdef _WIN32
-	if(tigrGL11Init(bmp))
+	if (tigrGL11Init(bmp))
 		return;
 	tigrGL33Init(bmp);
 	#endif
 
-	if(!gl->gl_legacy)
+	if (!gl->gl_legacy)
 	{
 		// create vao
 		glGenVertexArrays(1, &gl->vao);
@@ -271,7 +271,7 @@ void tigrGAPICreate(Tigr *bmp)
 	}
 
 	// create textures
-	if(gl->gl_legacy)
+	if (gl->gl_legacy)
 		glEnable(GL_TEXTURE_2D);
 	glGenTextures(2, gl->tex);
 	for(int i = 0; i < 2; ++i) {
@@ -290,9 +290,9 @@ void tigrGAPIDestroy(Tigr *bmp)
 	TigrInternal *win = tigrInternal(bmp);
 	GLStuff *gl= &win->gl;
 
-	if(tigrGAPIBegin(bmp) < 0) {tigrError(bmp, "Cannot activate OpenGL context.\n"); return;}
+	if (tigrGAPIBegin(bmp) < 0) {tigrError(bmp, "Cannot activate OpenGL context.\n"); return;}
 
-	if(!gl->gl_legacy)
+	if (!gl->gl_legacy)
 	{
 		glDeleteTextures(2, gl->tex);
 		glDeleteProgram(gl->program);
@@ -300,13 +300,13 @@ void tigrGAPIDestroy(Tigr *bmp)
 
 	tigrCheckGLError("destroy");
 
-	if(tigrGAPIEnd(bmp) < 0) {tigrError(bmp, "Cannot deactivate OpenGL context.\n"); return;}
+	if (tigrGAPIEnd(bmp) < 0) {tigrError(bmp, "Cannot deactivate OpenGL context.\n"); return;}
 
 	#ifdef _WIN32
-	if(gl->hglrc && !wglDeleteContext(gl->hglrc)) {tigrError(bmp, "Cannot delete OpenGL context.\n"); return;}
+	if (gl->hglrc && !wglDeleteContext(gl->hglrc)) {tigrError(bmp, "Cannot delete OpenGL context.\n"); return;}
 	gl->hglrc = NULL;
 
-	if(gl->dc && !ReleaseDC((HWND)bmp->handle, gl->dc)) {tigrError(bmp, "Cannot release OpenGL device context.\n"); return;}
+	if (gl->dc && !ReleaseDC((HWND)bmp->handle, gl->dc)) {tigrError(bmp, "Cannot release OpenGL device context.\n"); return;}
 	gl->dc = NULL;
 	#endif
 }
@@ -316,7 +316,7 @@ void tigrGAPIDraw(int legacy, GLuint uniform_model, GLuint tex, Tigr *bmp, int x
 	glBindTexture(GL_TEXTURE_2D, tex);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, bmp->w, bmp->h, 0, GL_BGRA, GL_UNSIGNED_BYTE, bmp->pix);
 
-	if(!legacy)
+	if (!legacy)
 	{
 		float sx = (float)(x2 - x1);
 		float sy = (float)(y2 - y1);
@@ -361,7 +361,7 @@ void tigrGAPIPresent(Tigr *bmp, int w, int h)
 		glClear(GL_COLOR_BUFFER_BIT);
 	}
 
-	if(!gl->gl_legacy)
+	if (!gl->gl_legacy)
 	{
 		float projection[16] =
 		{
@@ -398,7 +398,7 @@ void tigrGAPIPresent(Tigr *bmp, int w, int h)
 		glDisable(GL_BLEND);
 	tigrGAPIDraw(gl->gl_legacy, gl->uniform_model, gl->tex[0], bmp, win->pos[0], win->pos[1], win->pos[2], win->pos[3]);
 
-	if(win->widgetsScale > 0)
+	if (win->widgetsScale > 0)
 	{
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -410,7 +410,7 @@ void tigrGAPIPresent(Tigr *bmp, int w, int h)
 	tigrCheckGLError("present");
 
 	#ifdef _WIN32
-	if(!SwapBuffers(gl->dc)) {tigrError(bmp, "Cannot swap OpenGL buffers.\n"); return;}
+	if (!SwapBuffers(gl->dc)) {tigrError(bmp, "Cannot swap OpenGL buffers.\n"); return;}
 	#endif
 
 	gl->gl_user_opengl_rendering = 0;
