@@ -174,7 +174,7 @@ void tigrUpdate(Tigr *bmp)
 	// Update the widget overlay.
 	tigrWinUpdateWidgets(bmp, dw, dh);
 
-	if(!tigrGAPIBegin(bmp))
+	if (!tigrGAPIBegin(bmp))
 	{
 		tigrGAPIPresent(bmp, dw, dh);
 		tigrGAPIEnd(bmp);
@@ -239,7 +239,7 @@ LRESULT CALLBACK tigrWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
 	switch (message)
 	{
 	case WM_PAINT:
-		if(!tigrGAPIBegin(bmp))
+		if (!tigrGAPIBegin(bmp))
 		{
 			tigrGAPIPresent(bmp, dw, dh);
 			tigrGAPIEnd(bmp);

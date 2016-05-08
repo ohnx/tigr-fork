@@ -1763,7 +1763,7 @@ void tigrUpdate(Tigr *bmp)
 	// Update the widget overlay.
 	tigrWinUpdateWidgets(bmp, dw, dh);
 
-	if(!tigrGAPIBegin(bmp))
+	if (!tigrGAPIBegin(bmp))
 	{
 		tigrGAPIPresent(bmp, dw, dh);
 		tigrGAPIEnd(bmp);
@@ -1828,7 +1828,7 @@ LRESULT CALLBACK tigrWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
 	switch (message)
 	{
 	case WM_PAINT:
-		if(!tigrGAPIBegin(bmp))
+		if (!tigrGAPIBegin(bmp))
 		{
 			tigrGAPIPresent(bmp, dw, dh);
 			tigrGAPIEnd(bmp);
@@ -2356,7 +2356,7 @@ void windowDidBecomeKey(id self, SEL _sel, id notification)
 	object_getInstanceVariable(self, "tigrHandle", (void**)&bmp);
 	win = bmp ? tigrInternal(bmp) : NULL;
 
-	if(win)
+	if (win)
 	{
 		memset(win->keys, 0, 256);
 		memset(win->prev, 0, 256);
@@ -2368,7 +2368,7 @@ void windowDidBecomeKey(id self, SEL _sel, id notification)
 bool _tigrCocoaIsWindowClosed(id window)
 {
 	id wdg = objc_msgSend_id(window, sel_registerName("delegate"));
-	if(!wdg)
+	if (!wdg)
 		return false;
 	NSUInteger value = 0;
 	object_getInstanceVariable(wdg, "closed", (void**)&value);
@@ -2389,7 +2389,7 @@ void _tigrCleanupOSX()
 
 void tigrInitOSX()
 {
-	if(tigrOSXInited)
+	if (tigrOSXInited)
 		return;
 
 	#ifdef ARC_AVAILABLE
@@ -2488,11 +2488,11 @@ NSSize _tigrCocoaWindowSize(id window)
 
 TigrInternal * _tigrInternalCocoa(id window)
 {
-	if(!window)
+	if (!window)
 		return NULL;
 
 	id wdg = objc_msgSend_id(window, sel_registerName("delegate"));
-	if(!wdg)
+	if (!wdg)
 		return NULL;
 
 	Tigr * bmp = 0;
@@ -2555,7 +2555,7 @@ Tigr *tigrWindow(int w, int h, const char *title, int flags)
 
 	id contentView = objc_msgSend_id(window, sel_registerName("contentView"));
 
-	if(flags & TIGR_RETINA)
+	if (flags & TIGR_RETINA)
 		objc_msgSend_void_bool(contentView, sel_registerName("setWantsBestResolutionOpenGLSurface:"), YES);
 
 	NSPoint point = {20, 20};
@@ -2635,14 +2635,14 @@ Tigr *tigrWindow(int w, int h, const char *title, int flags)
 
 void tigrFree(Tigr *bmp)
 {
-	if(bmp->handle)
+	if (bmp->handle)
 	{
 		TigrInternal * win = tigrInternal(bmp);
 		tigrGAPIDestroy(bmp);
 		tigrFree(win->widgets);
 
 		id window = (id)bmp->handle;
-		if(!_tigrCocoaIsWindowClosed(window) && !terminated)
+		if (!_tigrCocoaIsWindowClosed(window) && !terminated)
 			objc_msgSend_void(window, sel_registerName("close"));
 	}
 	free(bmp->pix);
@@ -2878,11 +2878,11 @@ uint8_t _tigrKeyFromOSX(uint16_t key)
 
 void _tigrOnCocoaEvent(id event, id window)
 {
-	if(!event)
+	if (!event)
 		return;
 
 	TigrInternal * win = _tigrInternalCocoa(window);
-	if(!win) // just pipe the event
+	if (!win) // just pipe the event
 	{
 		objc_msgSend_void_id(NSApp, sel_registerName("sendEvent:"), event);
 		return;
@@ -2907,14 +2907,14 @@ void _tigrOnCocoaEvent(id event, id window)
 	{
 		// number == 2 is a middle button
 		NSInteger number = ((NSInteger (*)(id, SEL))objc_msgSend)(event, sel_registerName("buttonNumber"));
-		if(number == 2)
+		if (number == 2)
 			win->mouseButtons |= 4;
 		break;
 	}
 	case 26: // NSOtherMouseUp
 	{
 		NSInteger number = ((NSInteger (*)(id, SEL))objc_msgSend)(event, sel_registerName("buttonNumber"));
-		if(number == 2)
+		if (number == 2)
 			win->mouseButtons &= ~4;
 		break;
 	}
@@ -2924,13 +2924,13 @@ void _tigrOnCocoaEvent(id event, id window)
 	//	CGFloat deltaY = ((CGFloat (*)(id, SEL))abi_objc_msgSend_fpret)(event, sel_registerName("scrollingDeltaY"));
 	//	BOOL precisionScrolling = ((BOOL (*)(id, SEL))objc_msgSend)(event, sel_registerName("hasPreciseScrollingDeltas"));
 	//
-	//	if(precisionScrolling)
+	//	if (precisionScrolling)
 	//	{
 	//		deltaX *= 0.1f; // similar to glfw
 	//		deltaY *= 0.1f;
 	//	}
 	//
-	//	if(fabs(deltaX) > 0.0f || fabs(deltaY) > 0.0f)
+	//	if (fabs(deltaX) > 0.0f || fabs(deltaY) > 0.0f)
 	//		printf("mouse scroll wheel delta %f %f\n", deltaX, deltaY);
 	//	break;
 	//}
@@ -3004,13 +3004,13 @@ void tigrUpdate(Tigr *bmp)
 
 	id keyWindow = objc_msgSend_id(NSApp, sel_registerName("keyWindow"));
 
-	if(keyWindow == window)
+	if (keyWindow == window)
 		memcpy(win->prev, win->keys, 256);
 
 	id distantPast = objc_msgSend_id((id)objc_getClass("NSDate"), sel_registerName("distantPast"));
 	id event = ((id (*)(id, SEL, NSUInteger, id, id, BOOL))objc_msgSend)(NSApp, sel_registerName("nextEventMatchingMask:untilDate:inMode:dequeue:"), NSUIntegerMax, distantPast, NSDefaultRunLoopMode, YES);
 	_tigrOnCocoaEvent(event, keyWindow);
-	if(terminated || _tigrCocoaIsWindowClosed(window))
+	if (terminated || _tigrCocoaIsWindowClosed(window))
 		return;
 
 	// do runloop stuff
@@ -3064,10 +3064,10 @@ void tigrMouse(Tigr *bmp, int *x, int *y, int *buttons)
 	NSPoint p = ((NSPoint (*)(id, SEL))objc_msgSend)(window, sel_registerName("mouseLocationOutsideOfEventStream"));
 
 	// map input to content view rect
-	if(p.x < 0) p.x = 0;
-	else if(p.x > adjustFrame.size.width) p.x = adjustFrame.size.width;
-	if(p.y < 0) p.y = 0;
-	else if(p.y > adjustFrame.size.height) p.y = adjustFrame.size.height;
+	if (p.x < 0) p.x = 0;
+	else if (p.x > adjustFrame.size.width) p.x = adjustFrame.size.width;
+	if (p.y < 0) p.y = 0;
+	else if (p.y > adjustFrame.size.height) p.y = adjustFrame.size.height;
 
 	// map input to pixels
 	NSRect r = {p.x, p.y, 0, 0};
@@ -3077,12 +3077,12 @@ void tigrMouse(Tigr *bmp, int *x, int *y, int *buttons)
 	p.x = (p.x - win->pos[0]) / win->scale;
 	p.y = (adjustFrame.size.height - p.y - win->pos[1]) / win->scale;
 
-	if(x)
+	if (x)
 		*x = p.x;
-	if(y)
+	if (y)
 		*y = p.y;
 
-	if(buttons)
+	if (buttons)
 	{
 		id keyWindow = objc_msgSend_id(NSApp, sel_registerName("keyWindow"));
 		*buttons = keyWindow != bmp->handle ? 0 : win->mouseButtons;
@@ -3094,7 +3094,7 @@ int tigrKeyDown(Tigr *bmp, int key)
 	TigrInternal *win;
 	assert(key < 256);
 	id keyWindow = objc_msgSend_id(NSApp, sel_registerName("keyWindow"));
-	if(keyWindow != bmp->handle)
+	if (keyWindow != bmp->handle)
 		return 0;
 	win = tigrInternal(bmp);
 	return win->keys[key] && !win->prev[key];
@@ -3105,7 +3105,7 @@ int tigrKeyHeld(Tigr *bmp, int key)
 	TigrInternal *win;
 	assert(key < 256);
 	id keyWindow = objc_msgSend_id(NSApp, sel_registerName("keyWindow"));
-	if(keyWindow != bmp->handle)
+	if (keyWindow != bmp->handle)
 		return 0;
 	win = tigrInternal(bmp);
 	return win->keys[key];
@@ -3124,7 +3124,7 @@ float tigrTime()
 	static uint64_t time = 0;
 	static mach_timebase_info_data_t timebaseInfo;
 
-	if(timebaseInfo.denom == 0)
+	if (timebaseInfo.denom == 0)
 	{
 		mach_timebase_info(&timebaseInfo);
 		time = mach_absolute_time();
@@ -3260,11 +3260,11 @@ int tigrGL11Init(Tigr *bmp)
 		0,
 		0, 0, 0
 	};
-	if(!(gl->dc = GetDC((HWND)bmp->handle))) {tigrError(bmp, "Cannot create OpenGL device context.\n"); return -1;}
-	if(!(pixel_format = ChoosePixelFormat(gl->dc, &pfd))) {tigrError(bmp, "Cannot choose OpenGL pixel format.\n"); return -1;}
-	if(!SetPixelFormat(gl->dc, pixel_format, &pfd)) {tigrError(bmp, "Cannot set OpenGL pixel format.\n"); return -1;}
-	if(!(gl->hglrc = wglCreateContext(gl->dc))) {tigrError(bmp, "Cannot create OpenGL context.\n"); return -1;}
-	if(!wglMakeCurrent(gl->dc, gl->hglrc)) {tigrError(bmp, "Cannot activate OpenGL context.\n"); return -1;}
+	if (!(gl->dc = GetDC((HWND)bmp->handle))) {tigrError(bmp, "Cannot create OpenGL device context.\n"); return -1;}
+	if (!(pixel_format = ChoosePixelFormat(gl->dc, &pfd))) {tigrError(bmp, "Cannot choose OpenGL pixel format.\n"); return -1;}
+	if (!SetPixelFormat(gl->dc, pixel_format, &pfd)) {tigrError(bmp, "Cannot set OpenGL pixel format.\n"); return -1;}
+	if (!(gl->hglrc = wglCreateContext(gl->dc))) {tigrError(bmp, "Cannot create OpenGL context.\n"); return -1;}
+	if (!wglMakeCurrent(gl->dc, gl->hglrc)) {tigrError(bmp, "Cannot activate OpenGL context.\n"); return -1;}
 	gl->gl_legacy = 1;
 	return 0;
 }
@@ -3302,7 +3302,7 @@ int tigrGL33Init(Tigr *bmp)
 	glUniformMatrix4fv = (PFNGLUNIFORMMATRIX4FVPROC)wglGetProcAddress("glUniformMatrix4fv");
 	glActiveTexture = (PFNGLACTIVETEXTUREPROC)wglGetProcAddress("glActiveTexture");
 
-	if(!wglChoosePixelFormat || !wglCreateContextAttribs) {tigrError(bmp, "Cannot create OpenGL context.\n"); return -1;}
+	if (!wglChoosePixelFormat || !wglCreateContextAttribs) {tigrError(bmp, "Cannot create OpenGL context.\n"); return -1;}
 	const int attribList[] =
 	{
 		WGL_DRAW_TO_WINDOW_ARB, GL_TRUE,
@@ -3319,9 +3319,9 @@ int tigrGL33Init(Tigr *bmp)
 		WGL_CONTEXT_MINOR_VERSION_ARB, 3,
 		0
 	};
-	if(!wglChoosePixelFormat(gl->dc, attribList, NULL, 1, &pixel_format, &num_formats)) {tigrError(bmp, "Cannot choose OpenGL pixel format.\n"); return -1;}
-	if(!(gl->hglrc = wglCreateContextAttribs(gl->dc, gl->hglrc, attribs))) {tigrError(bmp, "Cannot create OpenGL context attribs.\n"); return -1;}
-	if(!wglMakeCurrent(gl->dc, gl->hglrc)) {tigrError(bmp, "Cannot activate OpenGL context.\n"); return -1;}
+	if (!wglChoosePixelFormat(gl->dc, attribList, NULL, 1, &pixel_format, &num_formats)) {tigrError(bmp, "Cannot choose OpenGL pixel format.\n"); return -1;}
+	if (!(gl->hglrc = wglCreateContextAttribs(gl->dc, gl->hglrc, attribs))) {tigrError(bmp, "Cannot create OpenGL context attribs.\n"); return -1;}
+	if (!wglMakeCurrent(gl->dc, gl->hglrc)) {tigrError(bmp, "Cannot activate OpenGL context.\n"); return -1;}
 	gl->gl_legacy = 0;
 	return 0;
 }
@@ -3330,7 +3330,7 @@ int tigrGL33Init(Tigr *bmp)
 void tigrCheckGLError(const char *state)
 {
 	GLenum err = glGetError();
-	if(err != GL_NO_ERROR)
+	if (err != GL_NO_ERROR)
 		printf("got gl error %x when was doing %s\n", err, state);
 }
 
@@ -3339,7 +3339,7 @@ void tigrCheckShaderErrors(GLuint object)
 	GLint success;
 	GLchar info[2048];
 	glGetShaderiv(object, GL_COMPILE_STATUS, &success);
-	if(!success)
+	if (!success)
 	{
 		glGetShaderInfoLog(object, sizeof(info), NULL, info);
 		printf("shader compile error : %s\n", info);
@@ -3351,7 +3351,7 @@ void tigrCheckProgramErrors(GLuint object)
 	GLint success;
 	GLchar info[2048];
 	glGetProgramiv(object, GL_LINK_STATUS, &success);
-	if(!success)
+	if (!success)
 	{
 		glGetProgramInfoLog(object, sizeof(info), NULL, info);
 		printf("shader link error : %s\n", info);
@@ -3375,12 +3375,12 @@ void tigrGAPICreate(Tigr *bmp)
 	};
 
 	#ifdef _WIN32
-	if(tigrGL11Init(bmp))
+	if (tigrGL11Init(bmp))
 		return;
 	tigrGL33Init(bmp);
 	#endif
 
-	if(!gl->gl_legacy)
+	if (!gl->gl_legacy)
 	{
 		// create vao
 		glGenVertexArrays(1, &gl->vao);
@@ -3417,7 +3417,7 @@ void tigrGAPICreate(Tigr *bmp)
 	}
 
 	// create textures
-	if(gl->gl_legacy)
+	if (gl->gl_legacy)
 		glEnable(GL_TEXTURE_2D);
 	glGenTextures(2, gl->tex);
 	for(int i = 0; i < 2; ++i) {
@@ -3436,9 +3436,9 @@ void tigrGAPIDestroy(Tigr *bmp)
 	TigrInternal *win = tigrInternal(bmp);
 	GLStuff *gl= &win->gl;
 
-	if(tigrGAPIBegin(bmp) < 0) {tigrError(bmp, "Cannot activate OpenGL context.\n"); return;}
+	if (tigrGAPIBegin(bmp) < 0) {tigrError(bmp, "Cannot activate OpenGL context.\n"); return;}
 
-	if(!gl->gl_legacy)
+	if (!gl->gl_legacy)
 	{
 		glDeleteTextures(2, gl->tex);
 		glDeleteProgram(gl->program);
@@ -3446,13 +3446,13 @@ void tigrGAPIDestroy(Tigr *bmp)
 
 	tigrCheckGLError("destroy");
 
-	if(tigrGAPIEnd(bmp) < 0) {tigrError(bmp, "Cannot deactivate OpenGL context.\n"); return;}
+	if (tigrGAPIEnd(bmp) < 0) {tigrError(bmp, "Cannot deactivate OpenGL context.\n"); return;}
 
 	#ifdef _WIN32
-	if(gl->hglrc && !wglDeleteContext(gl->hglrc)) {tigrError(bmp, "Cannot delete OpenGL context.\n"); return;}
+	if (gl->hglrc && !wglDeleteContext(gl->hglrc)) {tigrError(bmp, "Cannot delete OpenGL context.\n"); return;}
 	gl->hglrc = NULL;
 
-	if(gl->dc && !ReleaseDC((HWND)bmp->handle, gl->dc)) {tigrError(bmp, "Cannot release OpenGL device context.\n"); return;}
+	if (gl->dc && !ReleaseDC((HWND)bmp->handle, gl->dc)) {tigrError(bmp, "Cannot release OpenGL device context.\n"); return;}
 	gl->dc = NULL;
 	#endif
 }
@@ -3462,7 +3462,7 @@ void tigrGAPIDraw(int legacy, GLuint uniform_model, GLuint tex, Tigr *bmp, int x
 	glBindTexture(GL_TEXTURE_2D, tex);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, bmp->w, bmp->h, 0, GL_BGRA, GL_UNSIGNED_BYTE, bmp->pix);
 
-	if(!legacy)
+	if (!legacy)
 	{
 		float sx = (float)(x2 - x1);
 		float sy = (float)(y2 - y1);
@@ -3507,7 +3507,7 @@ void tigrGAPIPresent(Tigr *bmp, int w, int h)
 		glClear(GL_COLOR_BUFFER_BIT);
 	}
 
-	if(!gl->gl_legacy)
+	if (!gl->gl_legacy)
 	{
 		float projection[16] =
 		{
@@ -3544,7 +3544,7 @@ void tigrGAPIPresent(Tigr *bmp, int w, int h)
 		glDisable(GL_BLEND);
 	tigrGAPIDraw(gl->gl_legacy, gl->uniform_model, gl->tex[0], bmp, win->pos[0], win->pos[1], win->pos[2], win->pos[3]);
 
-	if(win->widgetsScale > 0)
+	if (win->widgetsScale > 0)
 	{
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -3556,7 +3556,7 @@ void tigrGAPIPresent(Tigr *bmp, int w, int h)
 	tigrCheckGLError("present");
 
 	#ifdef _WIN32
-	if(!SwapBuffers(gl->dc)) {tigrError(bmp, "Cannot swap OpenGL buffers.\n"); return;}
+	if (!SwapBuffers(gl->dc)) {tigrError(bmp, "Cannot swap OpenGL buffers.\n"); return;}
 	#endif
 
 	gl->gl_user_opengl_rendering = 0;

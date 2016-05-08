@@ -91,7 +91,7 @@ void windowDidBecomeKey(id self, SEL _sel, id notification)
 	object_getInstanceVariable(self, "tigrHandle", (void**)&bmp);
 	win = bmp ? tigrInternal(bmp) : NULL;
 
-	if(win)
+	if (win)
 	{
 		memset(win->keys, 0, 256);
 		memset(win->prev, 0, 256);
@@ -103,7 +103,7 @@ void windowDidBecomeKey(id self, SEL _sel, id notification)
 bool _tigrCocoaIsWindowClosed(id window)
 {
 	id wdg = objc_msgSend_id(window, sel_registerName("delegate"));
-	if(!wdg)
+	if (!wdg)
 		return false;
 	NSUInteger value = 0;
 	object_getInstanceVariable(wdg, "closed", (void**)&value);
@@ -124,7 +124,7 @@ void _tigrCleanupOSX()
 
 void tigrInitOSX()
 {
-	if(tigrOSXInited)
+	if (tigrOSXInited)
 		return;
 
 	#ifdef ARC_AVAILABLE
@@ -223,11 +223,11 @@ NSSize _tigrCocoaWindowSize(id window)
 
 TigrInternal * _tigrInternalCocoa(id window)
 {
-	if(!window)
+	if (!window)
 		return NULL;
 
 	id wdg = objc_msgSend_id(window, sel_registerName("delegate"));
-	if(!wdg)
+	if (!wdg)
 		return NULL;
 
 	Tigr * bmp = 0;
@@ -290,7 +290,7 @@ Tigr *tigrWindow(int w, int h, const char *title, int flags)
 
 	id contentView = objc_msgSend_id(window, sel_registerName("contentView"));
 
-	if(flags & TIGR_RETINA)
+	if (flags & TIGR_RETINA)
 		objc_msgSend_void_bool(contentView, sel_registerName("setWantsBestResolutionOpenGLSurface:"), YES);
 
 	NSPoint point = {20, 20};
@@ -370,14 +370,14 @@ Tigr *tigrWindow(int w, int h, const char *title, int flags)
 
 void tigrFree(Tigr *bmp)
 {
-	if(bmp->handle)
+	if (bmp->handle)
 	{
 		TigrInternal * win = tigrInternal(bmp);
 		tigrGAPIDestroy(bmp);
 		tigrFree(win->widgets);
 
 		id window = (id)bmp->handle;
-		if(!_tigrCocoaIsWindowClosed(window) && !terminated)
+		if (!_tigrCocoaIsWindowClosed(window) && !terminated)
 			objc_msgSend_void(window, sel_registerName("close"));
 	}
 	free(bmp->pix);
@@ -613,11 +613,11 @@ uint8_t _tigrKeyFromOSX(uint16_t key)
 
 void _tigrOnCocoaEvent(id event, id window)
 {
-	if(!event)
+	if (!event)
 		return;
 
 	TigrInternal * win = _tigrInternalCocoa(window);
-	if(!win) // just pipe the event
+	if (!win) // just pipe the event
 	{
 		objc_msgSend_void_id(NSApp, sel_registerName("sendEvent:"), event);
 		return;
@@ -642,14 +642,14 @@ void _tigrOnCocoaEvent(id event, id window)
 	{
 		// number == 2 is a middle button
 		NSInteger number = ((NSInteger (*)(id, SEL))objc_msgSend)(event, sel_registerName("buttonNumber"));
-		if(number == 2)
+		if (number == 2)
 			win->mouseButtons |= 4;
 		break;
 	}
 	case 26: // NSOtherMouseUp
 	{
 		NSInteger number = ((NSInteger (*)(id, SEL))objc_msgSend)(event, sel_registerName("buttonNumber"));
-		if(number == 2)
+		if (number == 2)
 			win->mouseButtons &= ~4;
 		break;
 	}
@@ -659,13 +659,13 @@ void _tigrOnCocoaEvent(id event, id window)
 	//	CGFloat deltaY = ((CGFloat (*)(id, SEL))abi_objc_msgSend_fpret)(event, sel_registerName("scrollingDeltaY"));
 	//	BOOL precisionScrolling = ((BOOL (*)(id, SEL))objc_msgSend)(event, sel_registerName("hasPreciseScrollingDeltas"));
 	//
-	//	if(precisionScrolling)
+	//	if (precisionScrolling)
 	//	{
 	//		deltaX *= 0.1f; // similar to glfw
 	//		deltaY *= 0.1f;
 	//	}
 	//
-	//	if(fabs(deltaX) > 0.0f || fabs(deltaY) > 0.0f)
+	//	if (fabs(deltaX) > 0.0f || fabs(deltaY) > 0.0f)
 	//		printf("mouse scroll wheel delta %f %f\n", deltaX, deltaY);
 	//	break;
 	//}
@@ -739,13 +739,13 @@ void tigrUpdate(Tigr *bmp)
 
 	id keyWindow = objc_msgSend_id(NSApp, sel_registerName("keyWindow"));
 
-	if(keyWindow == window)
+	if (keyWindow == window)
 		memcpy(win->prev, win->keys, 256);
 
 	id distantPast = objc_msgSend_id((id)objc_getClass("NSDate"), sel_registerName("distantPast"));
 	id event = ((id (*)(id, SEL, NSUInteger, id, id, BOOL))objc_msgSend)(NSApp, sel_registerName("nextEventMatchingMask:untilDate:inMode:dequeue:"), NSUIntegerMax, distantPast, NSDefaultRunLoopMode, YES);
 	_tigrOnCocoaEvent(event, keyWindow);
-	if(terminated || _tigrCocoaIsWindowClosed(window))
+	if (terminated || _tigrCocoaIsWindowClosed(window))
 		return;
 
 	// do runloop stuff
@@ -799,10 +799,10 @@ void tigrMouse(Tigr *bmp, int *x, int *y, int *buttons)
 	NSPoint p = ((NSPoint (*)(id, SEL))objc_msgSend)(window, sel_registerName("mouseLocationOutsideOfEventStream"));
 
 	// map input to content view rect
-	if(p.x < 0) p.x = 0;
-	else if(p.x > adjustFrame.size.width) p.x = adjustFrame.size.width;
-	if(p.y < 0) p.y = 0;
-	else if(p.y > adjustFrame.size.height) p.y = adjustFrame.size.height;
+	if (p.x < 0) p.x = 0;
+	else if (p.x > adjustFrame.size.width) p.x = adjustFrame.size.width;
+	if (p.y < 0) p.y = 0;
+	else if (p.y > adjustFrame.size.height) p.y = adjustFrame.size.height;
 
 	// map input to pixels
 	NSRect r = {p.x, p.y, 0, 0};
@@ -812,12 +812,12 @@ void tigrMouse(Tigr *bmp, int *x, int *y, int *buttons)
 	p.x = (p.x - win->pos[0]) / win->scale;
 	p.y = (adjustFrame.size.height - p.y - win->pos[1]) / win->scale;
 
-	if(x)
+	if (x)
 		*x = p.x;
-	if(y)
+	if (y)
 		*y = p.y;
 
-	if(buttons)
+	if (buttons)
 	{
 		id keyWindow = objc_msgSend_id(NSApp, sel_registerName("keyWindow"));
 		*buttons = keyWindow != bmp->handle ? 0 : win->mouseButtons;
@@ -829,7 +829,7 @@ int tigrKeyDown(Tigr *bmp, int key)
 	TigrInternal *win;
 	assert(key < 256);
 	id keyWindow = objc_msgSend_id(NSApp, sel_registerName("keyWindow"));
-	if(keyWindow != bmp->handle)
+	if (keyWindow != bmp->handle)
 		return 0;
 	win = tigrInternal(bmp);
 	return win->keys[key] && !win->prev[key];
@@ -840,7 +840,7 @@ int tigrKeyHeld(Tigr *bmp, int key)
 	TigrInternal *win;
 	assert(key < 256);
 	id keyWindow = objc_msgSend_id(NSApp, sel_registerName("keyWindow"));
-	if(keyWindow != bmp->handle)
+	if (keyWindow != bmp->handle)
 		return 0;
 	win = tigrInternal(bmp);
 	return win->keys[key];
@@ -859,7 +859,7 @@ float tigrTime()
 	static uint64_t time = 0;
 	static mach_timebase_info_data_t timebaseInfo;
 
-	if(timebaseInfo.denom == 0)
+	if (timebaseInfo.denom == 0)
 	{
 		mach_timebase_info(&timebaseInfo);
 		time = mach_absolute_time();
