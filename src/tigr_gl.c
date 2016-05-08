@@ -288,6 +288,8 @@ void tigrGAPIDestroy(Tigr *bmp)
 	TigrInternal *win = tigrInternal(bmp);
 	GLStuff *gl= &win->gl;
 
+	if(tigrBeginOpenGL(bmp) < 0) {tigrError(bmp, "Cannot activate OpenGL context.\n"); return;}
+
 	if(!gl->gl_legacy)
 	{
 		glDeleteTextures(2, gl->tex);
@@ -349,9 +351,8 @@ void tigrGAPIPresent(Tigr *bmp, int w, int h)
 	TigrInternal *win = tigrInternal(bmp);
 	GLStuff *gl= &win->gl;
 
-#ifdef _WIN32
-	wglMakeCurrent(gl->dc, gl->hglrc);
-#endif
+	tigrBeginOpenGL(bmp);
+
 	glViewport(0, 0, w, h);
 	glClearColor(0, 0, 0, 1);
 	glClear(GL_COLOR_BUFFER_BIT);
@@ -400,6 +401,19 @@ void tigrGAPIPresent(Tigr *bmp, int w, int h)
 
 	#ifdef _WIN32
 	if(!SwapBuffers(gl->dc)) {tigrError(bmp, "Cannot swap OpenGL buffers.\n"); return;}
+	if(!wglMakeCurrent(NULL, NULL)) {tigrError(bmp, "Cannot deactivate OpenGL context.\n"); return;}
+	#endif
+}
+
+int tigrBeginOpenGL(Tigr *bmp)
+{
+	TigrInternal *win = tigrInternal(bmp);
+	GLStuff *gl= &win->gl;
+	#ifdef _WIN32
+	return wglMakeCurrent(gl->dc, gl->hglrc) ? 0 : -1;
+	#endif
+	#ifdef __APPLE__
+	#error TODO
 	#endif
 }
 

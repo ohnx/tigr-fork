@@ -37,12 +37,12 @@ typedef struct {
 } TPixel;
 
 // Windows flags.
-#define TIGR_FIXED		0	// window's bitmap is a fixed size (default)
-#define TIGR_AUTO		1	// window's bitmap will automatically resize after each tigrUpdate
-#define TIGR_2X			2	// always enforce (at least) 2X pixel scale
-#define TIGR_3X			4	// always enforce (at least) 3X pixel scale
-#define TIGR_4X			8	// always enforce (at least) 4X pixel scale
-#define TIGR_RETINA		16	// enable retina support on OS X
+#define TIGR_FIXED			0	// window's bitmap is a fixed size (default)
+#define TIGR_AUTO			1	// window's bitmap will automatically resize after each tigrUpdate
+#define TIGR_2X				2	// always enforce (at least) 2X pixel scale
+#define TIGR_3X				4	// always enforce (at least) 3X pixel scale
+#define TIGR_4X				8	// always enforce (at least) 4X pixel scale
+#define TIGR_RETINA			16	// enable retina support on OS X
 
 // A Tigr bitmap.
 typedef struct Tigr {
@@ -66,12 +66,15 @@ int tigrClosed(Tigr *bmp);
 // Displays a window's contents on-screen.
 void tigrUpdate(Tigr *bmp);
 
+// Optionally should be called before your OpenGL content and before tigrUpdate
+// returns 0 if OpenGL is available, returns <0 on error
+int tigrBeginOpenGL(Tigr *bmp);
+
 // Sets post-FX properties for a window.
 // hblur/vblur = whether to use bilinear filtering along that axis (boolean)
 // scanlines = CRT scanlines effect (0-1)
 // contrast = contrast boost (1 = no change, 2 = 2X contrast, etc)
 void tigrSetPostFX(Tigr *bmp, int hblur, int vblur, float scanlines, float contrast);
-
 
 // Drawing ----------------------------------------------------------------
 
@@ -117,7 +120,6 @@ TIGR_INLINE TPixel tigrRGBA(unsigned char r, unsigned char g, unsigned char b, u
 	TPixel p; p.r = r; p.g = g; p.b = b; p.a = a; return p;
 }
 
-
 // Font printing ----------------------------------------------------------
 
 typedef struct {
@@ -150,7 +152,6 @@ int tigrTextHeight(TigrFont *font, const char *text);
 // The built-in font.
 extern TigrFont *tfont;
 
-
 // User Input -------------------------------------------------------------
 
 // Key scancodes. For letters/numbers, use ASCII ('A'-'Z' and '0'-'9').
@@ -178,7 +179,6 @@ int tigrKeyHeld(Tigr *bmp, int key);
 // Returns the Unicode value of the last key pressed, or 0 if none.
 int tigrReadChar(Tigr *bmp);
 
-
 // Bitmap I/O -------------------------------------------------------------
 
 // Loads a PNG, from either a file or memory. (fileName is UTF-8)
@@ -189,7 +189,6 @@ Tigr *tigrLoadImageMem(const void *data, int length);
 // Saves a PNG to a file. (fileName is UTF-8)
 // On error, returns zero and sets errno.
 int tigrSaveImage(const char *fileName, Tigr *bmp);
-
 
 // Helpers ----------------------------------------------------------------
 
