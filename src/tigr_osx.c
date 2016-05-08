@@ -344,7 +344,6 @@ Tigr *tigrWindow(int w, int h, const char *title, int flags)
 
 	// Set up the Windows parts.
 	win = tigrInternal(bmp);
-	win->glContext = openGLContext;
 	win->shown = 0;
 	win->closed = 0;
 	win->scale = scale;
@@ -358,6 +357,7 @@ Tigr *tigrWindow(int w, int h, const char *title, int flags)
 	win->widgetsScale = 0;
 	win->widgets = tigrBitmap(40, 14);
 	win->gl.gl_legacy = 0;
+	win->gl.glContext = openGLContext;
 	win->mouseButtons = 0;
 
 	tigrPosition(bmp, win->scale, bmp->w, bmp->h, win->pos);
@@ -373,7 +373,6 @@ void tigrFree(Tigr *bmp)
 	if(bmp->handle)
 	{
 		TigrInternal * win = tigrInternal(bmp);
-		objc_msgSend_void((id)win->glContext, sel_registerName("makeCurrentContext"));
 		tigrGAPIDestroy(bmp);
 		tigrFree(win->widgets);
 
@@ -736,7 +735,7 @@ void tigrUpdate(Tigr *bmp)
 	id window;
 	win = tigrInternal(bmp);
 	window = (id)bmp->handle;
-	openGLContext = (id)win->glContext;
+	openGLContext = (id)win->gl.glContext;
 
 	id keyWindow = objc_msgSend_id(NSApp, sel_registerName("keyWindow"));
 
@@ -764,6 +763,23 @@ void tigrUpdate(Tigr *bmp)
 	tigrPosition(bmp, win->scale, windowSize.width, windowSize.height, win->pos);
 	tigrGAPIPresent(bmp, windowSize.width, windowSize.height);
 	objc_msgSend_void(openGLContext, sel_registerName("flushBuffer"));
+}
+
+
+int tigrBeginOpenGL(Tigr *bmp)
+{
+	TigrInternal *win = tigrInternal(bmp);
+	//return wglMakeCurrent(win->gl.dc, win->gl.hglrc) ? 0 : -1;
+	objc_msgSend_void((id)win->gl.glContext, sel_registerName("makeCurrentContext"));
+	return 0;
+}
+
+int tigrEndOpenGL(Tigr *bmp)
+{
+	TigrInternal *win = tigrInternal(bmp);
+	(void)bmp;
+	objc_msgSend_void((id)objc_getClass("NSOpenGLContext"), sel_registerName("clearCurrentContext"));
+	return 0;
 }
 
 int tigrClosed(Tigr *bmp)

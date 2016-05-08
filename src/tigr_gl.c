@@ -1,5 +1,6 @@
 #include "tigr_internal.h"
 #include <stdio.h> // TODO can we remove this and printf's later?
+#include <assert.h>
 
 #ifdef TIGR_GAPI_GL
 
@@ -298,8 +299,9 @@ void tigrGAPIDestroy(Tigr *bmp)
 
 	tigrCheckGLError("destroy");
 
+	tigrEndOpenGL(bmp);
+
 	#ifdef _WIN32
-	if(!wglMakeCurrent(NULL, NULL)) {tigrError(bmp, "Cannot deactivate OpenGL context.\n"); return;}
 	if(gl->hglrc && !wglDeleteContext(gl->hglrc)) {tigrError(bmp, "Cannot delete OpenGL context.\n"); return;}
 	gl->hglrc = NULL;
 
@@ -401,20 +403,9 @@ void tigrGAPIPresent(Tigr *bmp, int w, int h)
 
 	#ifdef _WIN32
 	if(!SwapBuffers(gl->dc)) {tigrError(bmp, "Cannot swap OpenGL buffers.\n"); return;}
-	if(!wglMakeCurrent(NULL, NULL)) {tigrError(bmp, "Cannot deactivate OpenGL context.\n"); return;}
 	#endif
-}
 
-int tigrBeginOpenGL(Tigr *bmp)
-{
-	TigrInternal *win = tigrInternal(bmp);
-	GLStuff *gl= &win->gl;
-	#ifdef _WIN32
-	return wglMakeCurrent(gl->dc, gl->hglrc) ? 0 : -1;
-	#endif
-	#ifdef __APPLE__
-	#error TODO
-	#endif
+	tigrEndOpenGL(bmp);
 }
 
 #endif
