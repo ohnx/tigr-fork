@@ -80,7 +80,7 @@ void tigrLeaveBorderlessWindowed(Tigr *bmp)
 		0);
 }
 
-void tigrDxUpdateWidgets(Tigr *bmp, int dw, int dh)
+void tigrWinUpdateWidgets(Tigr *bmp, int dw, int dh)
 {
 	POINT pt;
 	int i, x, clicked=0;
@@ -172,7 +172,7 @@ void tigrUpdate(Tigr *bmp)
 	dh = rc.bottom - rc.top;
 
 	// Update the widget overlay.
-	tigrDxUpdateWidgets(bmp, dw, dh);
+	tigrWinUpdateWidgets(bmp, dw, dh);
 
 	tigrGAPIPresent(bmp, dw, dh);
 
@@ -462,8 +462,8 @@ void tigrFree(Tigr *bmp)
 	if (bmp->handle)
 	{
 		TigrInternal *win = tigrInternal(bmp);
-		DestroyWindow((HWND)bmp->handle);
 		tigrGAPIDestroy(bmp);
+		DestroyWindow((HWND)bmp->handle);
 		free(win->wtitle);
 		tigrFree(win->widgets);
 	}
