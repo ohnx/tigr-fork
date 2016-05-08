@@ -49,6 +49,7 @@ typedef struct {
 	GLuint uniform_model;
 	GLuint uniform_parameters;
 	int gl_legacy;
+	int gl_user_opengl_rendering;
 } GLStuff;
 #endif
 
@@ -88,7 +89,8 @@ TigrInternal *tigrInternal(Tigr *bmp);
 void tigrGAPICreate(Tigr *bmp);
 void tigrGAPIDestroy(Tigr *bmp);
 void tigrGAPIPresent(Tigr *bmp, int w, int h);
-int tigrEndOpenGL(Tigr *bmp);
+int tigrGAPIBegin(Tigr *bmp);
+int tigrGAPIEnd(Tigr *bmp);
 
 #endif
 
