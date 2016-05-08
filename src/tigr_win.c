@@ -189,6 +189,19 @@ void tigrUpdate(Tigr *bmp)
 	}
 }
 
+int tigrBeginOpenGL(Tigr *bmp)
+{
+	TigrInternal *win = tigrInternal(bmp);
+	return wglMakeCurrent(win->gl.dc, win->gl.hglrc) ? 0 : -1;
+	return 0;
+}
+
+int tigrEndOpenGL(Tigr *bmp)
+{
+	(void)bmp;
+	return wglMakeCurrent(NULL, NULL) ? 0 : -1;
+}
+
 static BOOL UnadjustWindowRectEx(LPRECT prc, DWORD dwStyle, BOOL fMenu, DWORD dwExStyle)
 {
 	BOOL fRc;
