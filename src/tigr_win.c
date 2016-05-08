@@ -174,7 +174,11 @@ void tigrUpdate(Tigr *bmp)
 	// Update the widget overlay.
 	tigrWinUpdateWidgets(bmp, dw, dh);
 
-	tigrGAPIPresent(bmp, dw, dh);
+	if(!tigrGAPIBegin(bmp))
+	{
+		tigrGAPIPresent(bmp, dw, dh);
+		tigrGAPIEnd(bmp);
+	}
 
 	memcpy(win->prev, win->keys, 256);
 
@@ -189,14 +193,14 @@ void tigrUpdate(Tigr *bmp)
 	}
 }
 
-int tigrBeginOpenGL(Tigr *bmp)
+int tigrGAPIBegin(Tigr *bmp)
 {
 	TigrInternal *win = tigrInternal(bmp);
 	return wglMakeCurrent(win->gl.dc, win->gl.hglrc) ? 0 : -1;
 	return 0;
 }
 
-int tigrEndOpenGL(Tigr *bmp)
+int tigrGAPIEnd(Tigr *bmp)
 {
 	(void)bmp;
 	return wglMakeCurrent(NULL, NULL) ? 0 : -1;

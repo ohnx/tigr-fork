@@ -751,7 +751,7 @@ void tigrUpdate(Tigr *bmp)
 	// do runloop stuff
 	objc_msgSend_void(NSApp, sel_registerName("updateWindows"));
 	objc_msgSend_void(openGLContext, sel_registerName("update"));
-	objc_msgSend_void(openGLContext, sel_registerName("makeCurrentContext"));
+	tigrGAPIBegin(bmp);
 
 	NSSize windowSize = _tigrCocoaWindowSize(window);
 
@@ -763,17 +763,17 @@ void tigrUpdate(Tigr *bmp)
 	tigrPosition(bmp, win->scale, windowSize.width, windowSize.height, win->pos);
 	tigrGAPIPresent(bmp, windowSize.width, windowSize.height);
 	objc_msgSend_void(openGLContext, sel_registerName("flushBuffer"));
+	tigrGAPIEnd(bmp);
 }
 
-int tigrBeginOpenGL(Tigr *bmp)
+int tigrGAPIBegin(Tigr *bmp)
 {
 	TigrInternal *win = tigrInternal(bmp);
-	//return wglMakeCurrent(win->gl.dc, win->gl.hglrc) ? 0 : -1;
 	objc_msgSend_void((id)win->gl.glContext, sel_registerName("makeCurrentContext"));
 	return 0;
 }
 
-int tigrEndOpenGL(Tigr *bmp)
+int tigrGAPIEnd(Tigr *bmp)
 {
 	(void)bmp;
 	objc_msgSend_void((id)objc_getClass("NSOpenGLContext"), sel_registerName("clearCurrentContext"));

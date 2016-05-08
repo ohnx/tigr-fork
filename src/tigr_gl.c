@@ -231,8 +231,6 @@ void tigrGAPICreate(Tigr *bmp)
 	tigrGL33Init(bmp);
 	#endif
 
-	//printf("ogl version %s\n", glGetString(GL_VERSION));
-
 	if(!gl->gl_legacy)
 	{
 		// create vao
@@ -289,7 +287,7 @@ void tigrGAPIDestroy(Tigr *bmp)
 	TigrInternal *win = tigrInternal(bmp);
 	GLStuff *gl= &win->gl;
 
-	if(tigrBeginOpenGL(bmp) < 0) {tigrError(bmp, "Cannot activate OpenGL context.\n"); return;}
+	if(tigrGAPIBegin(bmp) < 0) {tigrError(bmp, "Cannot activate OpenGL context.\n"); return;}
 
 	if(!gl->gl_legacy)
 	{
@@ -299,7 +297,7 @@ void tigrGAPIDestroy(Tigr *bmp)
 
 	tigrCheckGLError("destroy");
 
-	tigrEndOpenGL(bmp);
+	if(tigrGAPIEnd(bmp) < 0) {tigrError(bmp, "Cannot deactivate OpenGL context.\n"); return;}
 
 	#ifdef _WIN32
 	if(gl->hglrc && !wglDeleteContext(gl->hglrc)) {tigrError(bmp, "Cannot delete OpenGL context.\n"); return;}
@@ -353,11 +351,12 @@ void tigrGAPIPresent(Tigr *bmp, int w, int h)
 	TigrInternal *win = tigrInternal(bmp);
 	GLStuff *gl= &win->gl;
 
-	tigrBeginOpenGL(bmp);
-
 	glViewport(0, 0, w, h);
-	glClearColor(0, 0, 0, 1);
-	glClear(GL_COLOR_BUFFER_BIT);
+	if (!gl->gl_user_opengl_rendering)
+	{
+		glClearColor(0, 0, 0, 1);
+		glClear(GL_COLOR_BUFFER_BIT);
+	}
 
 	if(!gl->gl_legacy)
 	{
@@ -387,7 +386,13 @@ void tigrGAPIPresent(Tigr *bmp, int w, int h)
 		#endif
 	}
 
-	glDisable(GL_BLEND);
+	if (gl->gl_user_opengl_rendering)
+	{
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	}
+	else
+		glDisable(GL_BLEND);
 	tigrGAPIDraw(gl->gl_legacy, gl->uniform_model, gl->tex[0], bmp, win->pos[0], win->pos[1], win->pos[2], win->pos[3]);
 
 	if(win->widgetsScale > 0)
@@ -405,7 +410,14 @@ void tigrGAPIPresent(Tigr *bmp, int w, int h)
 	if(!SwapBuffers(gl->dc)) {tigrError(bmp, "Cannot swap OpenGL buffers.\n"); return;}
 	#endif
 
-	tigrEndOpenGL(bmp);
+	gl->gl_user_opengl_rendering = 0;
+}
+
+int tigrBeginOpenGL(Tigr *bmp)
+{
+	TigrInternal *win = tigrInternal(bmp);
+	win->gl.gl_user_opengl_rendering = 1;
+	return tigrGAPIBegin(bmp);
 }
 
 #endif
