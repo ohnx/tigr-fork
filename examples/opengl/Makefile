@@ -8,5 +8,5 @@ else
 	endif
 endif
 
-hello : hello.c ../../tigr.c
+opengl: opengl.c ../../tigr.c
 	gcc $^ -s -Os -o $@ $(CFLAGS) $(LDFLAGS)

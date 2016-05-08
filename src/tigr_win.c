@@ -239,7 +239,11 @@ LRESULT CALLBACK tigrWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
 	switch (message)
 	{
 	case WM_PAINT:
-		tigrGAPIPresent(bmp, dw, dh);
+		if(!tigrGAPIBegin(bmp))
+		{
+			tigrGAPIPresent(bmp, dw, dh);
+			tigrGAPIEnd(bmp);
+		}
 		ValidateRect(hWnd, NULL);
 		break;
 	case WM_CLOSE:
