@@ -9,10 +9,12 @@ build tigr_font.h: incbin font.png | incbin.pl
 build ../tigr.c: bundle tigr_amalgamated.c | *.c *.h bundle.pl
 
 # build test app
-includedirs += .. ../deps
+includedirs += ..
 filter system: Windows
 	ldflags += /SUBSYSTEM:WINDOWS
-	libs += Opengl32 Gdi32 d3d9 User32 Shell32
+	libs += Opengl32 Gdi32 User32 Shell32
+filter system: Darwin
+	frameworks += Cocoa OpenGL
 build objects(../examples/hello/build/example/*): auto ../examples/hello/*.c | ../tigr.h
 build objects(../examples/hello/build/tigr/*): auto ../*.c | ../*.h
 build application(../examples/hello/build/hello): auto objects(../examples/hello/build/**/*)
