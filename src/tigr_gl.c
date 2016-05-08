@@ -13,8 +13,11 @@ extern int tigr_upscale_gl_vs_size, tigr_upscale_gl_fs_size;
 #include <glext.h>
 #include <wglext.h>
 #else // short version of glext.h and wglext.h so we don't need to depend on them
+#ifndef APIENTRY
+#define APIENTRY
+#endif
 #ifndef APIENTRYP
-#define APIENTRYP *
+#define APIENTRYP APIENTRY *
 #endif
 typedef ptrdiff_t GLsizeiptr;
 #define GL_COMPILE_STATUS                 0x8B81
@@ -411,13 +414,6 @@ void tigrGAPIPresent(Tigr *bmp, int w, int h)
 	#endif
 
 	gl->gl_user_opengl_rendering = 0;
-}
-
-int tigrBeginOpenGL(Tigr *bmp)
-{
-	TigrInternal *win = tigrInternal(bmp);
-	win->gl.gl_user_opengl_rendering = 1;
-	return tigrGAPIBegin(bmp);
 }
 
 #endif
