@@ -39,6 +39,9 @@ typedef struct {
 	HGLRC hglrc;
 	HDC dc;
 	#endif
+	#ifdef __APPLE__
+	void *glContext;
+	#endif
 	GLuint tex[2];
 	GLuint vao;
 	GLuint program;
@@ -59,9 +62,6 @@ typedef struct {
 	wchar_t *wtitle;
 	DWORD dwStyle;
 	RECT oldPos;
-	#endif
-	#ifdef __APPLE__
-	void *glContext;
 	#endif
 
 	Tigr *widgets;
@@ -88,6 +88,7 @@ TigrInternal *tigrInternal(Tigr *bmp);
 void tigrGAPICreate(Tigr *bmp);
 void tigrGAPIDestroy(Tigr *bmp);
 void tigrGAPIPresent(Tigr *bmp, int w, int h);
+int tigrEndOpenGL(Tigr *bmp);
 
 #endif
 
